@@ -63,7 +63,7 @@ try:
         product_urls.extend(find_product_urls(soup))
 
     product_urls_total = len(product_urls)
-    product_urls_processed = 1
+    product_urls_processed = 0
     for product_url in product_urls:
         product_urls_processed = product_urls_processed + 1
         driver.get(product_url)
@@ -72,16 +72,17 @@ try:
         soup = BeautifulSoup(content, 'html.parser')
         product_name_element = soup.find(attrs={"data-testid": "product-title"})
         if product_name_element is not None:
-            print(product_name_element)
-            brand_name = product_name_element.find(attrs={"data-testid": "manufacture-name"}).find("a").text
-            print(brand_name)
-            product_name = product_name_element.find(attrs={"data-testid": "product-title-heading"}).text.replace(
-                brand_name, "").strip()
+            brand_name_element = product_name_element.find(attrs={"data-testid": "manufacture-name"})
+            product_name = product_name_element.find(attrs={"data-testid": "product-title-heading"}).text.strip()
+            if brand_name_element is not None:
+                brand_name = brand_name_element.find("a").text.strip()
+                print(brand_name)
+                product_name = product_name.replace(brand_name, "").strip()
             print(product_name)
-            price_element = soup.find(attrs={"data-testid": "advertised-price"})
-            print(price_element)
-            price = price_element.text.replace("Chewy Price", "").strip()
+            price = soup.find(attrs={"data-testid": "advertised-price"}).text.replace("Chewy Price", "").strip()
             print(price)
+            print()
+    print("Total products processed: " + str(product_urls_processed))
 
 except exceptions.StaleElementReferenceException as e:
     print(f">> {type(e).__name__}: {e.args}")
